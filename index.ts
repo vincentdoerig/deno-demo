@@ -4,8 +4,12 @@ import { v4 } from 'https://deno.land/std/uuid/mod.ts';
 import * as yup from 'https://cdn.pika.dev/yup';
 const env = config();
 
+interface RequestError extends Error {
+  status: number;
+}
+
 interface Dinosaur {
-  id: string;
+  id?: string;
   name: string;
   image: string;
 }
@@ -37,11 +41,35 @@ router.post('/dino', async (ctx) => {
     DB.set(dino.id, dino);
     ctx.response.body = dino;
   } catch (error) {
-    ctx.response.status = 422;
-    ctx.response.body = { message: error.message };
+    error.status = 422;
+    throw error;
   }
 });
 
+router.delete('/dino/:id', (ctx) => {
+  const { id } = ctx.params;
+  if (id && DB.has(id)) {
+    DB.delete(id);
+    ctx.response.status = 204;
+    ctx.response.body = { message: 'Success' };
+  } else {
+    const error = new Error('Not Found') as RequestError;
+    error.status = 404;
+    throw error;
+  }
+});
+
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+    const error = err as RequestError;
+    ctx.response.status = error.status || 500;
+    ctx.response.body = {
+      message: error.message,
+    };
+  }
+});
 app.use(router.routes());
 app.use(router.allowedMethods());
 

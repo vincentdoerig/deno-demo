@@ -5,5 +5,5 @@
 ## Run
 
 ```bash
-deno run --allow-net --allow-env --allow-read --allow-write index.ts
+deno run --allow-net --allow-env --allow-read index.ts
 ```
