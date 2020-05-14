@@ -7,3 +7,9 @@
 ```bash
 deno run --allow-net --allow-env --allow-read index.ts
 ```
+
+## Run tests
+
+```bash
+deno test --allow-net
+```
