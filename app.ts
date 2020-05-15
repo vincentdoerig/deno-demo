@@ -1,6 +1,9 @@
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import { v4 } from "https://deno.land/std/uuid/mod.ts";
-import * as yup from "https://cdn.pika.dev/yup";
+import yup from "https://dev.jspm.io/yup";
+
+import errorHandler from "./controllers/errorHandler.ts";
+import notFound from "./controllers/notFound.ts";
 
 interface RequestError extends Error {
   status: number;
@@ -26,7 +29,7 @@ router.get("/", (ctx) => {
   ctx.response.body = { message: "Hello World!" };
 });
 
-router.get("/dino", (ctx) => {
+router.get("/dinos", (ctx) => {
   ctx.response.body = [...DB.values()];
 });
 
@@ -62,9 +65,11 @@ router.patch("/dino/:id", async (ctx) => {
       const body = await ctx.request.body();
       if (body.type !== "json") throw new Error("Invlaid Body");
       const currentData: Dinosaur = DB.get(id)!;
-      if (!body.value.name) body.value.name = currentData.name;
-      if (!body.value.image) body.value.image = currentData.image;
-      const dino = (await dinoSchema.validate(body.value)) as Dinosaur;
+      const updatedData = {
+        name: body.value.name ? String(body.value.name) : currentData.name,
+        image: body.value.image ? String(body.value.image) : currentData.image,
+      };
+      const dino = (await dinoSchema.validate(updatedData)) as Dinosaur;
       dino.id = id;
       DB.set(id, dino);
       ctx.response.body = dino;
@@ -92,18 +97,9 @@ router.delete("/dino/:id", (ctx) => {
   }
 });
 
-app.use(async (ctx, next) => {
-  try {
-    await next();
-  } catch (err) {
-    const error = err as RequestError;
-    ctx.response.status = error.status || 500;
-    ctx.response.body = {
-      message: error.message,
-    };
-  }
-});
 app.use(router.routes());
 app.use(router.allowedMethods());
+app.use(errorHandler);
+app.use(notFound);
 
 export default app;

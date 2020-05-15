@@ -61,8 +61,8 @@ test("POST /dino, , 'Sauroposeidon'", async () => {
   assert(hasKeySetTo(body, "name", dino2.name));
 });
 
-test("GET /dino", async () => {
-  const response = await fetch(`${URL_BASE}/dino`);
+test("GET /dinos", async () => {
+  const response = await fetch(`${URL_BASE}/dinos`);
   const body = await response.json();
   assertEquals(response.status, 200);
   assertEquals(body.length, 2);
@@ -102,8 +102,15 @@ test("DELETE /dino/:id, , 'Sauroposeidon'", async () => {
 });
 
 test("GET /dino", async () => {
-  const response = await fetch(`${URL_BASE}/dino`);
+  const response = await fetch(`${URL_BASE}/dinos`);
   const body = await response.json();
   assertEquals(response.status, 200);
   assertEquals(body.length, 1);
+});
+
+test("GET /this-route-does-not-exist", async () => {
+  const response = await fetch(`${URL_BASE}/this-route-does-not-exist`);
+  const body = await response.json();
+  assertEquals(response.status, 404);
+  assertEquals(body, { message: "Not Found" });
 });
