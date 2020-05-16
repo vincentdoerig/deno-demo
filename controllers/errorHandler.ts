@@ -1,6 +1,4 @@
-interface RequestError extends Error {
-  status: number;
-}
+import { RequestError } from "../globals.d.ts";
 
 export default async ({ response }: any, next: any) => {
   try {

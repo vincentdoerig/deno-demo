@@ -1,19 +1,10 @@
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import { v4 } from "https://deno.land/std/uuid/mod.ts";
-import yup from "https://dev.jspm.io/yup";
+import * as yup from "https://cdn.pika.dev/yup";
+import { Dinosaur, RequestError } from "./globals.d.ts";
 
 import errorHandler from "./controllers/errorHandler.ts";
 import notFound from "./controllers/notFound.ts";
-
-interface RequestError extends Error {
-  status: number;
-}
-
-interface Dinosaur {
-  id?: string;
-  name: string;
-  image: string;
-}
 
 const dinoSchema = yup.object().shape({
   name: yup.string().trim().min(2).required(),
@@ -97,9 +88,9 @@ router.delete("/dino/:id", (ctx) => {
   }
 });
 
+app.use(errorHandler);
 app.use(router.routes());
 app.use(router.allowedMethods());
-app.use(errorHandler);
 app.use(notFound);
 
 export default app;
